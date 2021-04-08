@@ -1,0 +1,52 @@
+//BITI 3413 Evolutionary Computing Lab 3: Implementation-Initial Population
+//1.The simplified Knapsack Problem
+#include<iostream>
+#include<stdlib.h> //为了使用 rand()
+using namespace std;
+
+//declare constant:
+//固定化书包容量：
+const int CAPACITY = 104; 
+//固定化物品数量（一排染色体的基因数量）
+const int GENE = 8;
+//固定化物品重量 （一整排基因的重量）
+const int WEIHGT[GENE] = { 25,35,45,5,25,3,2,2 };
+//固定化染色体数量
+const int POP_SIZE = 5;
+//declare 染色体的pattern
+int chromosome[POP_SIZE][GENE];
+
+void initializePopulation()
+{
+	for (int c = 0; c < POP_SIZE; c++) //用 for loop -> row (c, POP_SIZE)
+	{
+		for (int g = 0; g < GENE; g++) //用 for loop ->column (g, GENE)
+		{
+			chromosome[c][g] = rand() % 2; //rand() = 随机化； %2 = 把随机化的结果转换成binary
+		}
+	}
+}
+
+void printChromosome()
+{
+	for (int c = 0; c < POP_SIZE; c++) //用 for loop -> row (c, POP_SIZE)
+	{
+		cout << "Chromosome " << c + 1 << ": ";  //为每一个染色体取名字 example: chromosome 1: 11110101 chromosome 2: 10101010....等等之类的
+		for (int g = 0; g < GENE; g++) //用 for loop ->column (g, GENE)
+		{
+			
+			cout << chromosome[c][g] << " ";   //print出染色体组合 example：10101010
+			
+		}
+		cout << endl; //空行
+
+	}
+
+	cout << endl;
+}
+
+void main()
+{
+	initializePopulation(); 
+	printChromosome();
+}
