@@ -80,3 +80,23 @@ void main()
 
 }
 
+
+###########################################################################################################################################################################
+OUTPUT:
+Chromosome 1: 1 0 1 1 1 1 0 0 
+Chromosome 2: 1 1 0 1 0 1 1 0 
+Chromosome 3: 0 0 0 0 1 0 1 1 
+Chromosome 4: 0 0 0 1 1 1 1 0 
+Chromosome 5: 0 0 1 1 1 0 1 0 
+
+Total weight of chromosome: 
+Chromosome 1: 103
+Fitness value of chromosome: 1 = 0.00961538
+Chromosome 2: 70
+Fitness value of chromosome: 2 = 0.326923
+Chromosome 3: 29
+Fitness value of chromosome: 3 = 0.721154
+Chromosome 4: 35
+Fitness value of chromosome: 4 = 0.663462
+Chromosome 5: 77
+Fitness value of chromosome: 5 = 0.259615
