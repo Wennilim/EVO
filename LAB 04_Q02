@@ -1,0 +1,75 @@
+#include<iostream>
+#include<stdlib.h> 
+using namespace std;
+
+
+const int CAPACITY = 104;
+const int GENE = 8;
+const int WEIHGT[GENE] = { 25,35,45,5,25,3,2,2 };
+const int POP_SIZE = 5;
+int chromosome[POP_SIZE][GENE];
+double fitness[POP_SIZE];
+
+void initializePopulation()
+{
+	for (int c = 0; c < POP_SIZE; c++) 
+	{
+		for (int g = 0; g < GENE; g++) 
+		{
+			chromosome[c][g] = rand() % 6;          // %2 = BINARY; %6 = range[0,5]
+		}
+	}
+}
+
+void printChromosome()
+{
+	for (int c = 0; c < POP_SIZE; c++) 
+	{
+		cout << "Chromosome " << c + 1 << ": ";  
+		for (int g = 0; g < GENE; g++) 
+		{
+
+			cout << chromosome[c][g] << " ";   
+
+		}
+		cout << endl; 
+
+	}
+
+	cout << endl;
+}
+
+void evaluateChromosome()
+{
+	int accumulatedWeight = 0;
+	cout << "Total weight of chromosome " << endl;
+	for (int c = 0; c < POP_SIZE; c++)
+	{
+		 accumulatedWeight = 0;
+		cout << "Chromosome " << c + 1 << ": " ;
+		for (int g = 0; g < GENE; g++)
+		{
+			
+			if (chromosome[c][g] != 0)
+			{
+				accumulatedWeight += WEIHGT[g] + chromosome[c][g];
+				
+			}
+			
+			
+		}
+		cout << accumulatedWeight;
+		cout << endl;
+		fitness[c] = abs(CAPACITY - accumulatedWeight )/ (double)CAPACITY;
+		cout << "Fitness value of chromosome: " << c + 1 << " = " << fitness[c] << endl;
+	}
+	
+}
+
+void main()
+{
+	initializePopulation();
+	printChromosome();
+	evaluateChromosome();
+
+}
