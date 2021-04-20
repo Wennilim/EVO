@@ -39,7 +39,7 @@ void printChromosome()
 	cout << endl;
 }
 
-void evaluateChromosome()   //计算Fitness value
+void evaluateChromosome()   //计算 total value of item ( NOT FITNESS VALUES)
 {
 	int accumulatedWeight = 0;
 	cout << "Fitness value of chromosome " << endl;
