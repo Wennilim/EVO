@@ -1,3 +1,4 @@
+//BINARY VERSION (0-1KNAPSACK PROBLEM)
 #include<iostream>
 #include<stdlib.h> 
 using namespace std;
