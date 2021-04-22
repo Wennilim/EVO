@@ -134,3 +134,57 @@ void main()
 	parentSelection();
 	
 }
+
+##########################################################################################################################################################################
+OUTPUT:
+
+Chromosome 1: 1 1 0 0 1 0 0 0
+Chromosome 2: 0 0 1 1 1 1 1 1
+Chromosome 3: 1 0 1 0 1 0 0 1
+Chromosome 4: 0 0 1 0 0 1 1 0
+Chromosome 5: 1 0 1 0 1 1 1 0
+Chromosome 6: 1 1 0 1 1 0 1 1
+Chromosome 7: 1 0 1 0 0 1 1 1
+Chromosome 8: 1 1 1 0 0 1 0 0
+Chromosome 9: 0 0 0 0 0 0 0 1
+Chromosome 10: 0 1 0 0 0 1 1 0
+
+Total weight of chromosome 1: 85
+Fitness value of chromosome: 1 = 0.182692
+
+Total weight of chromosome 2: 82
+Fitness value of chromosome: 2 = 0.211538
+
+Total weight of chromosome 3: 97
+Fitness value of chromosome: 3 = 0.0673077
+
+Total weight of chromosome 4: 50
+Fitness value of chromosome: 4 = 0.519231
+
+Total weight of chromosome 5: 100
+Fitness value of chromosome: 5 = 0.0384615
+
+Total weight of chromosome 6: 94
+Fitness value of chromosome: 6 = 0.0961538
+
+Total weight of chromosome 7: 77
+Fitness value of chromosome: 7 = 0.259615
+
+Total weight of chromosome 8: 108
+Fitness value of chromosome: 8 = 0.0384615
+
+Total weight of chromosome 9: 2
+Fitness value of chromosome: 9 = 0.980769
+
+Total weight of chromosome 10: 40
+Fitness value of chromosome: 10 = 0.615385
+
+
+Player 1 index: 9
+Player 2 index: 3
+Index Parents: 3
+Player 1 index: 4
+Player 2 index: 6
+Index Parents: 4
+Parents 1: 0 0 1 0 0 1 1 0
+Parents 2: 1 0 1 0 1 1 1 0
