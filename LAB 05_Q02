@@ -8,7 +8,7 @@ using namespace std;
 const int CAPACITY = 104;
 const int GENE = 8;
 const int WEIHGT[GENE] = { 25,35,45,5,25,3,2,2 };
-const int POP_SIZE = 30; //We upgrade the population size to 10
+const int POP_SIZE = 30; //We upgrade the population size to 30
 int chromosome[POP_SIZE][GENE];
 double fitness[POP_SIZE];
 int parents[2][GENE]; // DATATYPE= choose int because follow the chromosome datatype; parents[2]= because parents has only 2 
