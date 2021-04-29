@@ -1,0 +1,262 @@
+//20210429 今天学CROSSOVER
+#include<iostream>
+#include<stdlib.h> 
+#include<ctime>
+using namespace std;
+
+
+const int CAPACITY = 104;
+const int GENE = 8;
+const int WEIHGT[GENE] = { 25,35,45,5,25,3,2,2 };
+const int POP_SIZE = 10;                              //We upgrade the population size to 10
+const float CROSSOVER_PROBABILITY = 1.0;              //100% chromosome will involved crossover; if 0.2, only 20% chromosome will involved in crossover.
+int chromosome[POP_SIZE][GENE];
+double fitness[POP_SIZE];
+int parents[2][GENE];                                 // DATATYPE= choose int because follow the chromosome datatype; parents[2]= because parents has only 2 
+int children[2][GENE];                                //Follow parents 
+
+void initializePopulation()
+{
+	for (int c = 0; c < POP_SIZE; c++)
+	{
+		for (int g = 0; g < GENE; g++)
+		{
+			chromosome[c][g] = rand() % 2;
+		}
+	}
+}
+
+void printChromosome()
+{
+	for (int c = 0; c < POP_SIZE; c++)
+	{
+		cout << "Chromosome " << c + 1 << ": ";
+		for (int g = 0; g < GENE; g++)
+		{
+
+			cout << chromosome[c][g] << " ";
+
+		}
+		cout << endl;
+
+	}
+
+	cout << endl;
+}
+
+void evaluateChromosome()   
+{
+	int accumulatedWeight = 0;
+
+	for (int c = 0; c < POP_SIZE; c++)
+	{
+		accumulatedWeight = 0;
+		cout << "Total weight of chromosome " << c + 1 << ": ";
+		for (int g = 0; g < GENE; g++)
+		{
+
+			if (chromosome[c][g] == 1)
+			{
+				accumulatedWeight = accumulatedWeight + WEIHGT[g];
+
+			}
+
+
+		}
+		cout << accumulatedWeight;
+		cout << endl;
+
+
+		
+        //The higher the weight of the chromosome, the better the quality of the chromosome.
+		fitness[c] = abs(CAPACITY - accumulatedWeight) / (double)CAPACITY;  
+		cout << "Fitness value of chromosome: " << c + 1 << " = " << fitness[c] << endl;
+		
+		//The smaller the differences the weight of the chromosome, the better the quality of the chromosome.
+	    fitness[c] = abs(CAPACITY - accumulatedWeight); 
+	    cout << "Difference weight of chromosome: " << c + 1 << " = " << fitness[c] << endl;
+		cout << endl;
+	}
+
+}
+
+void parentSelection()  
+{
+  // make declaration of the player1,player2, indexParents
+	int player1, player2;
+	int indexParents[2];
+
+//for parents
+	for (int i = 0; i < 2; i++)
+	{
+  //set player1 & player2
+        //srand(time(NULL));
+		player1 = rand() % POP_SIZE; //pick chromosome randomly from C0-C9
+    
+    //do-while loops is used because player1 and player2 will not always be same.
+		do
+    {
+        srand(time(NULL));
+	    player2 = rand() % POP_SIZE;
+		
+    } while (player1 == player2);
+
+		cout << "\nPlayer 1 index: " << player1;
+		cout << "\nPlayer 2 index: " << player2;
+
+
+		if (fitness[player1] < fitness[player2])  // In this case, the smaller the fitness value, the better the quality of the chromosome.
+		{
+			indexParents[i] = player1;
+		}
+		else
+		{
+			indexParents[i] = player2;
+		}
+
+		cout << "\nIndex Parents: " << indexParents[i];
+	}
+
+
+//for copy parent
+	for (int i = 0; i < 2; i++) //row
+	{
+		cout << "\nParents " << i + 1 << ":";
+		for (int g = 0; g < GENE; g++) //column
+		{
+			parents[i][g] = chromosome[indexParents[i]][g]; //把winner player的chromosome的gene code copy去parent, 所以after printout出来，你会看到parent：10101010 之类的gene code.
+			cout << parents[i][g] << " ";
+			
+		}
+	}
+	cout << endl;
+	cout << endl;
+}
+
+void crossover()
+{
+    //declare variables
+    float randNo;
+    int xpoint;
+    
+    for(int row=0; row<2; row++)
+    {
+        for(int col=0; col<GENE; col++)
+        {
+            children[row][col]=parents[row][col];  //parents copy into children  process
+        }
+    }
+    
+    randNo = rand() % 11 /10.0;                   //0.0-1.0 will be randomly selected
+    srand(time(NULL));                            // the result will comes out different when everytime execution
+    if(randNo <= CROSSOVER_PROBABILITY)           //crossover process will be happened when random probability less than crossover probability
+    {
+        xpoint = rand() % GENE;                   //generate random crossover point
+        
+        cout<<"\n crossover point: "<< xpoint;
+        
+        for(int c=xpoint; c<GENE; c++)            //crossover parent 1 and parent 2 to produce the children
+        {
+            children[0][c]=parents[1][c];
+            children[1][c]=parents[0][c];
+        }
+    }
+    
+     for(int row=0; row<2; row++)                 //print children 1 and 2
+    {
+        cout<<"\nchildren: "<<row+1<<":";
+        for(int col=0; col<GENE; col++)
+        {
+           cout<<children[row][col];
+        }
+    }
+    
+}
+
+int main()
+{
+	initializePopulation();
+	cout<<"GENE CODE OF THE CHROMOSOME: "<<endl;
+	printChromosome();
+	cout<<"EVALUATE CHROMOSOME: "<<endl;
+	evaluateChromosome();
+	cout<<"PARENT SELECTION: "<<endl;
+	parentSelection();
+	cout<<"CROSSOVER: "<<endl;
+	crossover();
+	return 0;
+}
+
+
+##########################################################################################################################################################################
+OUTPUT:
+GENE CODE OF THE CHROMOSOME: 
+Chromosome 1: 1 0 1 1 1 1 0 0 
+Chromosome 2: 1 1 0 1 0 1 1 0 
+Chromosome 3: 0 0 0 0 1 0 1 1 
+Chromosome 4: 0 0 0 1 1 1 1 0 
+Chromosome 5: 0 0 1 1 1 0 1 0 
+Chromosome 6: 1 1 1 1 0 1 0 0 
+Chromosome 7: 1 0 1 0 1 0 0 1 
+Chromosome 8: 0 0 0 1 1 1 0 1 
+Chromosome 9: 0 1 0 1 1 1 0 1 
+Chromosome 10: 0 1 0 1 0 0 1 0 
+
+EVALUATE CHROMOSOME: 
+Total weight of chromosome 1: 103
+Fitness value of chromosome: 1 = 0.00961538
+Difference weight of chromosome: 1 = 1
+
+Total weight of chromosome 2: 70
+Fitness value of chromosome: 2 = 0.326923
+Difference weight of chromosome: 2 = 34
+
+Total weight of chromosome 3: 29
+Fitness value of chromosome: 3 = 0.721154
+Difference weight of chromosome: 3 = 75
+
+Total weight of chromosome 4: 35
+Fitness value of chromosome: 4 = 0.663462
+Difference weight of chromosome: 4 = 69
+
+Total weight of chromosome 5: 77
+Fitness value of chromosome: 5 = 0.259615
+Difference weight of chromosome: 5 = 27
+
+Total weight of chromosome 6: 113
+Fitness value of chromosome: 6 = 0.0865385
+Difference weight of chromosome: 6 = 9
+
+Total weight of chromosome 7: 97
+Fitness value of chromosome: 7 = 0.0673077
+Difference weight of chromosome: 7 = 7
+
+Total weight of chromosome 8: 35
+Fitness value of chromosome: 8 = 0.663462
+Difference weight of chromosome: 8 = 69
+
+Total weight of chromosome 9: 70
+Fitness value of chromosome: 9 = 0.326923
+Difference weight of chromosome: 9 = 34
+
+Total weight of chromosome 10: 42
+Fitness value of chromosome: 10 = 0.596154
+Difference weight of chromosome: 10 = 62
+
+PARENT SELECTION: 
+
+Player 1 index: 7
+Player 2 index: 9
+Index Parents: 9
+Player 1 index: 1
+Player 2 index: 9
+Index Parents: 1
+Parents 1:0 1 0 1 0 0 1 0 
+Parents 2:1 1 0 1 0 1 1 0 
+
+CROSSOVER: 
+
+ crossover point: 3
+children: 1:01010110
+children: 2:11010010
+
