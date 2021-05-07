@@ -1,0 +1,1605 @@
+//今天学copy chromosome + 创造很多出来出generation chromosome出来
+#include<iostream>
+#include<stdlib.h> 
+#include<ctime>
+#include<stdio.h>
+using namespace std;
+
+
+const int CAPACITY = 104;
+const int GENE = 8;
+const int WEIHGT[GENE] = { 25,35,45,5,25,3,2,2 };
+const int POP_SIZE = 10;                              //We upgrade the population size to 10
+const float CROSSOVER_PROBABILITY = 1.0;              //100% chromosome will involved crossover; if 0.2, only 20% chromosome will involved in crossover.
+const float MUTATION_PROBABILITY = 0.9;               //90% chromosome will involved muataion
+const int MAX_GEN = 3;                                // max generation interation is 3
+
+int chromosome[POP_SIZE][GENE];
+double fitness[POP_SIZE];
+int parents[2][GENE];                                 // DATATYPE= choose int because follow the chromosome datatype; parents[2]= because parents has only 2 
+int children[2][GENE];                                //Follow parents 
+int survivor[POP_SIZE][GENE];                         // temporary survivor array
+int newChromo = 0;                                    // new chromosome
+
+void initializePopulation()
+{
+	for (int c = 0; c < POP_SIZE; c++)
+	{
+		for (int g = 0; g < GENE; g++)
+		{
+			chromosome[c][g] = rand() % 2;
+		}
+	}
+}
+
+void printChromosome()
+{
+	for (int c = 0; c < POP_SIZE; c++)
+	{
+		cout << "Chromosome " << c + 1 << ": ";
+		for (int g = 0; g < GENE; g++)
+		{
+
+			cout << chromosome[c][g] << " ";
+
+		}
+		cout << endl;
+
+	}
+
+	cout << endl;
+}
+
+void evaluateChromosome()   
+{
+	int accumulatedWeight = 0;
+
+	for (int c = 0; c < POP_SIZE; c++)
+	{
+		accumulatedWeight = 0;
+		cout << "Total weight of chromosome " << c + 1 << ": ";
+		for (int g = 0; g < GENE; g++)
+		{
+
+			if (chromosome[c][g] == 1)
+			{
+				accumulatedWeight = accumulatedWeight + WEIHGT[g];
+
+			}
+
+
+		}
+		cout << accumulatedWeight;
+		cout << endl;
+
+
+		
+        //The higher the weight of the chromosome, the better the quality of the chromosome.
+		fitness[c] = abs(CAPACITY - accumulatedWeight) / (double)CAPACITY;  
+		cout << "Fitness value of chromosome: " << c + 1 << " = " << fitness[c] << endl;
+		
+		//The smaller the differences the weight of the chromosome, the better the quality of the chromosome.
+	    fitness[c] = abs(CAPACITY - accumulatedWeight); 
+	    cout << "Difference weight of chromosome: " << c + 1 << " = " << fitness[c] << endl;
+		cout << endl;
+	}
+
+}
+
+void parentSelection()  
+{
+  // make declaration of the player1,player2, indexParents
+	int player1, player2;
+	int indexParents[2];
+
+//for parents
+	for (int i = 0; i < 2; i++)
+	{
+  //set player1 & player2
+        //srand(time(NULL));
+		player1 = rand() % POP_SIZE; //pick chromosome randomly from C0-C9
+    
+    //do-while loops is used because player1 and player2 will not always be same.
+		do
+    {
+        srand(time(NULL));
+	    player2 = rand() % POP_SIZE;
+		
+    } while (player1 == player2);
+
+		cout << "\nPlayer 1 index: " << player1;
+		cout << "\nPlayer 2 index: " << player2;
+
+
+		if (fitness[player1] < fitness[player2])  // In this case, the smaller the fitness value, the better the quality of the chromosome.
+		{
+			indexParents[i] = player1;
+		}
+		else
+		{
+			indexParents[i] = player2;
+		}
+
+		cout << "\nIndex Parents: " << indexParents[i];
+	}
+
+
+//for copy parent
+	for (int i = 0; i < 2; i++) //row
+	{
+		cout << "\nParents " << i + 1 << ":";
+		for (int g = 0; g < GENE; g++) //column
+		{
+			parents[i][g] = chromosome[indexParents[i]][g]; //把winner player的chromosome的gene code copy去parent, 所以after printout出来，你会看到parent：10101010 之类的gene code.
+			cout << parents[i][g] << " ";
+			
+		}
+	}
+	cout << endl;
+	cout << endl;
+}
+
+void crossover()
+{
+    //declare variables
+    float randNo;
+    int xpoint;
+    
+    for(int row=0; row<2; row++)
+    {
+        for(int col=0; col<GENE; col++)
+        {
+            children[row][col]=parents[row][col];  //parents copy into children  process
+        }
+    }
+    
+    randNo = rand() % 11 /10.0;                   //0.0-1.0 will be randomly selected
+    srand(time(NULL));                            // the result will comes out different when everytime execution
+    if(randNo <= CROSSOVER_PROBABILITY)           //crossover process will be happened when random probability less than crossover probability
+    {
+        xpoint = rand() % GENE;                   //generate random crossover point
+        
+        cout<<"\n crossover point: "<< xpoint;
+        
+        for(int c=xpoint; c<GENE; c++)            //crossover parent 1 and parent 2 to produce the children
+        {
+            children[0][c]=parents[1][c];
+            children[1][c]=parents[0][c];
+        }
+    }
+    
+     for(int row=0; row<2; row++)                 //print children 1 and 2
+    {
+        cout<<"\nchildren: "<<row+1<<":";
+        for(int col=0; col<GENE; col++)
+        {
+           cout<<children[row][col];
+        }
+    }
+    cout << endl;
+	cout << endl;
+}
+
+void mutation()
+{
+    //1. Declare necessary variables
+    int randValue;                  //random value
+    
+    //2. Declare mutation bit
+    int mutationBit;                //gene you want to mutate
+    
+    //3. For both children (2 children)
+    for(int i=0; i<2; i++)
+    {       
+            //3.1. Generate number from 0-1 (real values)
+           randValue = (rand()%11)/10.0;
+           
+            //3.2. If 3.1 less than mutation probability
+            if(randValue<MUTATION_PROBABILITY)
+            {  
+                //3.2.1. generate a mutation bit
+                mutationBit = rand()%GENE;          // gene 0 - gene 7 randomly selected
+           
+            //3.2.2. Print the mutation bit
+            cout<<"\nMutationBit: "<<mutationBit;
+            
+            //3.2.3. Flip the mutation bit (if condition)
+            if(children[i][mutationBit]==1)
+                children[i][mutationBit]=0;
+            else
+                children[i][mutationBit]=1;
+                
+        }//End if
+    }//End for
+    
+    //5. Print the mutated chromosomes
+     for(int row=0; row<2; row++)                 //print children 1 and 2 after mutation
+    {
+        cout<<"\nChildren after mutation: "<<row+1<<":";
+        for(int col=0; col<GENE; col++)
+        {
+           cout<<children[row][col];
+        }
+    }
+     cout << endl;
+	 cout << endl;
+}
+
+void survivalSelection()
+{
+    //1. For each chromosome
+         for(int c=0; c<2; c++)
+         {
+            //1.2. For each gene
+                    for(int g=0; g<GENE; g++)
+                    {
+                        //1.3 Copy children to the survival chromosome array
+                        survivor[newChromo][g] = children[c][g];
+                    }
+        //2. Update array counter
+             newChromo++;
+         }
+   
+    //3. Print chromosome in the new population so far
+     for(int row=0; row<newChromo; row++)                 //print new chromosome so far
+    {
+        cout<<"\nNew Chromosome so far: "<<row+1<<":";
+        for(int col=0; col<GENE; col++)
+        {
+           cout<<children[row][col];
+        }
+    }
+     cout << endl;
+	 cout << endl;
+    
+}
+
+void copyChromosome()
+{
+    //1. For each chromosome
+     for(int c=0; c<POP_SIZE; c++)
+       {
+           //1.2. For each gene
+           for(int g=0; g<GENE; g++)
+           {
+                //1.3 Copy newChromosome to chromosome
+                chromosome[c][g] = survivor[c][g];
+           }
+       }
+}
+
+int main()
+{
+    srand(time(0));
+    cout<<"INITIALIZE POPULATION: "<<endl;
+	initializePopulation();
+	
+	for(int gen=0; gen<MAX_GEN; gen++)              // loops for the next generation until a certain termination condition is met.
+	{   newChromo = 0;
+    	cout<<"GENERATION: "<< gen + 1<<endl;
+    	printChromosome();
+    	getchar();
+    	cout<<"EVALUATE CHROMOSOME: "<<endl;
+    	evaluateChromosome();
+    	
+    	for(int i=0; i<POP_SIZE; i++)
+        {	cout<<"PARENT SELECTION: "<<endl;
+        	parentSelection();
+        	cout<<"CROSSOVER: "<<endl;
+        	crossover();
+        	cout<<"MUTATION: "<<endl;
+        	mutation();
+        	cout<<"SURVIVOR SELECTION: "<<endl;
+        	survivalSelection();
+        	
+        }
+        copyChromosome();
+	}
+	
+	return 0;
+}
+
+#############################################################################################################################################################################
+OUTPUT:
+INITIALIZE POPULATION: 
+GENERATION: 1
+Chromosome 1: 1 1 1 0 1 0 0 1 
+Chromosome 2: 1 0 0 0 0 0 0 1 
+Chromosome 3: 0 1 1 1 1 0 1 1 
+Chromosome 4: 0 0 0 1 0 0 1 1 
+Chromosome 5: 1 0 1 0 0 1 1 0 
+Chromosome 6: 0 1 0 0 0 1 1 0 
+Chromosome 7: 0 0 1 1 0 1 1 1 
+Chromosome 8: 1 1 0 1 1 1 0 0 
+Chromosome 9: 1 0 1 0 1 0 0 1 
+Chromosome 10: 0 0 0 0 1 1 0 0 
+
+
+EVALUATE CHROMOSOME: 
+Total weight of chromosome 1: 132
+Fitness value of chromosome: 1 = 0.269231
+Difference weight of chromosome: 1 = 28
+
+Total weight of chromosome 2: 27
+Fitness value of chromosome: 2 = 0.740385
+Difference weight of chromosome: 2 = 77
+
+Total weight of chromosome 3: 114
+Fitness value of chromosome: 3 = 0.0961538
+Difference weight of chromosome: 3 = 10
+
+Total weight of chromosome 4: 9
+Fitness value of chromosome: 4 = 0.913462
+Difference weight of chromosome: 4 = 95
+
+Total weight of chromosome 5: 75
+Fitness value of chromosome: 5 = 0.278846
+Difference weight of chromosome: 5 = 29
+
+Total weight of chromosome 6: 40
+Fitness value of chromosome: 6 = 0.615385
+Difference weight of chromosome: 6 = 64
+
+Total weight of chromosome 7: 57
+Fitness value of chromosome: 7 = 0.451923
+Difference weight of chromosome: 7 = 47
+
+Total weight of chromosome 8: 93
+Fitness value of chromosome: 8 = 0.105769
+Difference weight of chromosome: 8 = 11
+
+Total weight of chromosome 9: 97
+Fitness value of chromosome: 9 = 0.0673077
+Difference weight of chromosome: 9 = 7
+
+Total weight of chromosome 10: 28
+Fitness value of chromosome: 10 = 0.730769
+Difference weight of chromosome: 10 = 76
+
+PARENT SELECTION: 
+
+Player 1 index: 6
+Player 2 index: 9
+Index Parents: 6
+Player 1 index: 0
+Player 2 index: 9
+Index Parents: 0
+Parents 1:0 0 1 1 0 1 1 1 
+Parents 2:1 1 1 0 1 0 0 1 
+
+CROSSOVER: 
+
+ crossover point: 7
+children: 1:00110111
+children: 2:11101001
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 7
+Children after mutation: 1:00110011
+Children after mutation: 2:11101000
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00110011
+New Chromosome so far: 2:11101000
+
+PARENT SELECTION: 
+
+Player 1 index: 1
+Player 2 index: 9
+Index Parents: 9
+Player 1 index: 0
+Player 2 index: 9
+Index Parents: 0
+Parents 1:0 0 0 0 1 1 0 0 
+Parents 2:1 1 1 0 1 0 0 1 
+
+CROSSOVER: 
+
+ crossover point: 7
+children: 1:00001101
+children: 2:11101000
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 7
+Children after mutation: 1:00001001
+Children after mutation: 2:11101001
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00001001
+New Chromosome so far: 2:11101001
+New Chromosome so far: 3:00001100
+New Chromosome so far: 4:11101001
+
+PARENT SELECTION: 
+
+Player 1 index: 1
+Player 2 index: 9
+Index Parents: 9
+Player 1 index: 0
+Player 2 index: 9
+Index Parents: 0
+Parents 1:0 0 0 0 1 1 0 0 
+Parents 2:1 1 1 0 1 0 0 1 
+
+CROSSOVER: 
+
+ crossover point: 7
+children: 1:00001101
+children: 2:11101000
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 7
+Children after mutation: 1:00001001
+Children after mutation: 2:11101001
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00001001
+New Chromosome so far: 2:11101001
+New Chromosome so far: 3:00001100
+New Chromosome so far: 4:11101001
+New Chromosome so far: 5:01077673984010791976960107610112001079492608
+New Chromosome so far: 6:01077739520010789847040107842764801076232192
+
+PARENT SELECTION: 
+
+Player 1 index: 1
+Player 2 index: 9
+Index Parents: 9
+Player 1 index: 0
+Player 2 index: 9
+Index Parents: 0
+Parents 1:0 0 0 0 1 1 0 0 
+Parents 2:1 1 1 0 1 0 0 1 
+
+CROSSOVER: 
+
+ crossover point: 7
+children: 1:00001101
+children: 2:11101000
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 7
+Children after mutation: 1:00001001
+Children after mutation: 2:11101001
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00001001
+New Chromosome so far: 2:11101001
+New Chromosome so far: 3:00001100
+New Chromosome so far: 4:11101001
+New Chromosome so far: 5:01077673984010791976960107610112001079492608
+New Chromosome so far: 6:01077739520010789847040107842764801076232192
+New Chromosome so far: 7:01075576832010791813120000
+New Chromosome so far: 8:00000000
+
+PARENT SELECTION: 
+
+Player 1 index: 1
+Player 2 index: 9
+Index Parents: 9
+Player 1 index: 0
+Player 2 index: 9
+Index Parents: 0
+Parents 1:0 0 0 0 1 1 0 0 
+Parents 2:1 1 1 0 1 0 0 1 
+
+CROSSOVER: 
+
+ crossover point: 7
+children: 1:00001101
+children: 2:11101000
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 7
+Children after mutation: 1:00001001
+Children after mutation: 2:11101001
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00001001
+New Chromosome so far: 2:11101001
+New Chromosome so far: 3:00001100
+New Chromosome so far: 4:11101001
+New Chromosome so far: 5:01077673984010791976960107610112001079492608
+New Chromosome so far: 6:01077739520010789847040107842764801076232192
+New Chromosome so far: 7:01075576832010791813120000
+New Chromosome so far: 8:00000000
+New Chromosome so far: 9:11101001
+New Chromosome so far: 10:10000001
+
+PARENT SELECTION: 
+
+Player 1 index: 1
+Player 2 index: 9
+Index Parents: 9
+Player 1 index: 0
+Player 2 index: 9
+Index Parents: 0
+Parents 1:0 0 0 0 1 1 0 0 
+Parents 2:1 1 1 0 1 0 0 1 
+
+CROSSOVER: 
+
+ crossover point: 7
+children: 1:00001101
+children: 2:11101000
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 7
+Children after mutation: 1:00001001
+Children after mutation: 2:11101001
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00001001
+New Chromosome so far: 2:11101001
+New Chromosome so far: 3:00001100
+New Chromosome so far: 4:11101001
+New Chromosome so far: 5:01077673984010791976960107610112001079492608
+New Chromosome so far: 6:01077739520010789847040107842764801076232192
+New Chromosome so far: 7:01075576832010791813120000
+New Chromosome so far: 8:00000000
+New Chromosome so far: 9:11101001
+New Chromosome so far: 10:10000001
+New Chromosome so far: 11:01111011
+New Chromosome so far: 12:00010011
+
+PARENT SELECTION: 
+
+Player 1 index: 1
+Player 2 index: 9
+Index Parents: 9
+Player 1 index: 0
+Player 2 index: 9
+Index Parents: 0
+Parents 1:0 0 0 0 1 1 0 0 
+Parents 2:1 1 1 0 1 0 0 1 
+
+CROSSOVER: 
+
+ crossover point: 7
+children: 1:00001101
+children: 2:11101000
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 7
+Children after mutation: 1:00001001
+Children after mutation: 2:11101001
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00001001
+New Chromosome so far: 2:11101001
+New Chromosome so far: 3:00001001
+New Chromosome so far: 4:11101001
+New Chromosome so far: 5:01077673984010791976960107610112001079492608
+New Chromosome so far: 6:01077739520010789847040107842764801076232192
+New Chromosome so far: 7:01075576832010791813120000
+New Chromosome so far: 8:00000000
+New Chromosome so far: 9:11101001
+New Chromosome so far: 10:10000001
+New Chromosome so far: 11:01111011
+New Chromosome so far: 12:00010011
+New Chromosome so far: 13:10100110
+New Chromosome so far: 14:01000110
+
+PARENT SELECTION: 
+
+Player 1 index: 1
+Player 2 index: 9
+Index Parents: 9
+Player 1 index: 0
+Player 2 index: 9
+Index Parents: 0
+Parents 1:0 0 0 0 1 1 0 0 
+Parents 2:1 1 1 0 1 0 0 1 
+
+CROSSOVER: 
+
+ crossover point: 7
+children: 1:00001101
+children: 2:11101000
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 7
+Children after mutation: 1:00001001
+Children after mutation: 2:11101001
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00001001
+New Chromosome so far: 2:11101001
+New Chromosome so far: 3:00001100
+New Chromosome so far: 4:11101001
+New Chromosome so far: 5:00001001
+New Chromosome so far: 6:11101001
+New Chromosome so far: 7:01075576832010791813120000
+New Chromosome so far: 8:00000000
+New Chromosome so far: 9:11101001
+New Chromosome so far: 10:10000001
+New Chromosome so far: 11:01111011
+New Chromosome so far: 12:00010011
+New Chromosome so far: 13:10100110
+New Chromosome so far: 14:01000110
+New Chromosome so far: 15:00110111
+New Chromosome so far: 16:11011100
+
+PARENT SELECTION: 
+
+Player 1 index: 1
+Player 2 index: 9
+Index Parents: 1
+Player 1 index: 0
+Player 2 index: 9
+Index Parents: 0
+Parents 1:1 0 0 0 0 0 0 1 
+Parents 2:1 1 1 0 1 0 0 1 
+
+CROSSOVER: 
+
+ crossover point: 7
+children: 1:10000001
+children: 2:11101001
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 7
+Children after mutation: 1:10000101
+Children after mutation: 2:11101000
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:10000101
+New Chromosome so far: 2:11101000
+New Chromosome so far: 3:10000001
+New Chromosome so far: 4:11101001
+New Chromosome so far: 5:00001001
+New Chromosome so far: 6:11101001
+New Chromosome so far: 7:10000101
+New Chromosome so far: 8:11101000
+New Chromosome so far: 9:11101001
+New Chromosome so far: 10:10000001
+New Chromosome so far: 11:01111011
+New Chromosome so far: 12:00010011
+New Chromosome so far: 13:10100110
+New Chromosome so far: 14:01000110
+New Chromosome so far: 15:00110111
+New Chromosome so far: 16:11011100
+New Chromosome so far: 17:10101001
+New Chromosome so far: 18:00001100
+
+PARENT SELECTION: 
+
+Player 1 index: 1
+Player 2 index: 9
+Index Parents: 9
+Player 1 index: 0
+Player 2 index: 9
+Index Parents: 9
+Parents 1:0 0 0 0 1 1 0 0 
+Parents 2:0 0 0 0 1 1 0 0 
+
+CROSSOVER: 
+
+ crossover point: 7
+children: 1:00001100
+children: 2:00001100
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 7
+Children after mutation: 1:00001000
+Children after mutation: 2:00001101
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00001000
+New Chromosome so far: 2:00001101
+New Chromosome so far: 3:00001100
+New Chromosome so far: 4:00001100
+New Chromosome so far: 5:00001001
+New Chromosome so far: 6:11101001
+New Chromosome so far: 7:10000101
+New Chromosome so far: 8:11101000
+New Chromosome so far: 9:00001000
+New Chromosome so far: 10:00001101
+New Chromosome so far: 11:01111011
+New Chromosome so far: 12:00010011
+New Chromosome so far: 13:10100110
+New Chromosome so far: 14:01000110
+New Chromosome so far: 15:00110111
+New Chromosome so far: 16:11011100
+New Chromosome so far: 17:10101001
+New Chromosome so far: 18:00001100
+New Chromosome so far: 19:00000000
+New Chromosome so far: 20:00000000
+
+GENERATION: 2
+Chromosome 1: 0 0 1 1 0 0 1 1 
+Chromosome 2: 1 1 1 0 1 0 0 0 
+Chromosome 3: 0 0 0 0 1 0 0 1 
+Chromosome 4: 1 1 1 0 1 0 0 1 
+Chromosome 5: 0 0 0 0 1 0 0 1 
+Chromosome 6: 1 1 1 0 1 0 0 1 
+Chromosome 7: 0 0 0 0 1 0 0 1 
+Chromosome 8: 1 1 1 0 1 0 0 1 
+Chromosome 9: 0 0 0 0 1 0 0 1 
+Chromosome 10: 1 1 1 0 1 0 0 1 
+
+
+EVALUATE CHROMOSOME: 
+Total weight of chromosome 1: 54
+Fitness value of chromosome: 1 = 0.480769
+Difference weight of chromosome: 1 = 50
+
+Total weight of chromosome 2: 130
+Fitness value of chromosome: 2 = 0.25
+Difference weight of chromosome: 2 = 26
+
+Total weight of chromosome 3: 27
+Fitness value of chromosome: 3 = 0.740385
+Difference weight of chromosome: 3 = 77
+
+Total weight of chromosome 4: 132
+Fitness value of chromosome: 4 = 0.269231
+Difference weight of chromosome: 4 = 28
+
+Total weight of chromosome 5: 27
+Fitness value of chromosome: 5 = 0.740385
+Difference weight of chromosome: 5 = 77
+
+Total weight of chromosome 6: 132
+Fitness value of chromosome: 6 = 0.269231
+Difference weight of chromosome: 6 = 28
+
+Total weight of chromosome 7: 27
+Fitness value of chromosome: 7 = 0.740385
+Difference weight of chromosome: 7 = 77
+
+Total weight of chromosome 8: 132
+Fitness value of chromosome: 8 = 0.269231
+Difference weight of chromosome: 8 = 28
+
+Total weight of chromosome 9: 27
+Fitness value of chromosome: 9 = 0.740385
+Difference weight of chromosome: 9 = 77
+
+Total weight of chromosome 10: 132
+Fitness value of chromosome: 10 = 0.269231
+Difference weight of chromosome: 10 = 28
+
+PARENT SELECTION: 
+
+Player 1 index: 1
+Player 2 index: 2
+Index Parents: 1
+Player 1 index: 5
+Player 2 index: 2
+Index Parents: 5
+Parents 1:1 1 1 0 1 0 0 0 
+Parents 2:1 1 1 0 1 0 0 1 
+
+CROSSOVER: 
+
+ crossover point: 2
+children: 1:11101001
+children: 2:11101000
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 6
+Children after mutation: 1:11101101
+Children after mutation: 2:11101010
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:11101101
+New Chromosome so far: 2:11101010
+
+PARENT SELECTION: 
+
+Player 1 index: 0
+Player 2 index: 2
+Index Parents: 0
+Player 1 index: 5
+Player 2 index: 2
+Index Parents: 5
+Parents 1:0 0 1 1 0 0 1 1 
+Parents 2:1 1 1 0 1 0 0 1 
+
+CROSSOVER: 
+
+ crossover point: 2
+children: 1:00101001
+children: 2:11110011
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 6
+Children after mutation: 1:00101101
+Children after mutation: 2:11110001
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00101101
+New Chromosome so far: 2:11110001
+New Chromosome so far: 3:00110011
+New Chromosome so far: 4:11101001
+
+PARENT SELECTION: 
+
+Player 1 index: 0
+Player 2 index: 2
+Index Parents: 0
+Player 1 index: 5
+Player 2 index: 2
+Index Parents: 5
+Parents 1:0 0 1 1 0 0 1 1 
+Parents 2:1 1 1 0 1 0 0 1 
+
+CROSSOVER: 
+
+ crossover point: 2
+children: 1:00101001
+children: 2:11110011
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 6
+Children after mutation: 1:00101101
+Children after mutation: 2:11110001
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00101101
+New Chromosome so far: 2:11110001
+New Chromosome so far: 3:00110011
+New Chromosome so far: 4:11101001
+New Chromosome so far: 5:01078525952010775429120107919769601077673984
+New Chromosome so far: 6:01079197696010776739840107919769601077673984
+
+PARENT SELECTION: 
+
+Player 1 index: 0
+Player 2 index: 2
+Index Parents: 0
+Player 1 index: 5
+Player 2 index: 2
+Index Parents: 5
+Parents 1:0 0 1 1 0 0 1 1 
+Parents 2:1 1 1 0 1 0 0 1 
+
+CROSSOVER: 
+
+ crossover point: 2
+children: 1:00101001
+children: 2:11110011
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 6
+Children after mutation: 1:00101101
+Children after mutation: 2:11110001
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00101101
+New Chromosome so far: 2:11110001
+New Chromosome so far: 3:00110011
+New Chromosome so far: 4:11101001
+New Chromosome so far: 5:01078525952010775429120107919769601077673984
+New Chromosome so far: 6:01079197696010776739840107919769601077673984
+New Chromosome so far: 7:01079197696010776739840101
+New Chromosome so far: 8:11101000
+
+PARENT SELECTION: 
+
+Player 1 index: 0
+Player 2 index: 2
+Index Parents: 0
+Player 1 index: 5
+Player 2 index: 2
+Index Parents: 5
+Parents 1:0 0 1 1 0 0 1 1 
+Parents 2:1 1 1 0 1 0 0 1 
+
+CROSSOVER: 
+
+ crossover point: 2
+children: 1:00101001
+children: 2:11110011
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 6
+Children after mutation: 1:00101101
+Children after mutation: 2:11110001
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00101101
+New Chromosome so far: 2:11110001
+New Chromosome so far: 3:00110011
+New Chromosome so far: 4:11101001
+New Chromosome so far: 5:01078525952010775429120107919769601077673984
+New Chromosome so far: 6:01079197696010776739840107919769601077673984
+New Chromosome so far: 7:01079197696010776739840101
+New Chromosome so far: 8:11101000
+New Chromosome so far: 9:00110011
+New Chromosome so far: 10:11101000
+
+PARENT SELECTION: 
+
+Player 1 index: 0
+Player 2 index: 2
+Index Parents: 0
+Player 1 index: 5
+Player 2 index: 2
+Index Parents: 5
+Parents 1:0 0 1 1 0 0 1 1 
+Parents 2:1 1 1 0 1 0 0 1 
+
+CROSSOVER: 
+
+ crossover point: 2
+children: 1:00101001
+children: 2:11110011
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 6
+Children after mutation: 1:00101101
+Children after mutation: 2:11110001
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00101101
+New Chromosome so far: 2:11110001
+New Chromosome so far: 3:00110011
+New Chromosome so far: 4:11101001
+New Chromosome so far: 5:01078525952010775429120107919769601077673984
+New Chromosome so far: 6:01079197696010776739840107919769601077673984
+New Chromosome so far: 7:01079197696010776739840101
+New Chromosome so far: 8:11101000
+New Chromosome so far: 9:00110011
+New Chromosome so far: 10:11101000
+New Chromosome so far: 11:00001001
+New Chromosome so far: 12:11101001
+
+PARENT SELECTION: 
+
+Player 1 index: 0
+Player 2 index: 2
+Index Parents: 0
+Player 1 index: 5
+Player 2 index: 2
+Index Parents: 5
+Parents 1:0 0 1 1 0 0 1 1 
+Parents 2:1 1 1 0 1 0 0 1 
+
+CROSSOVER: 
+
+ crossover point: 2
+children: 1:00101001
+children: 2:11110011
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 6
+Children after mutation: 1:00101101
+Children after mutation: 2:11110001
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00101101
+New Chromosome so far: 2:11110001
+New Chromosome so far: 3:00101101
+New Chromosome so far: 4:11110001
+New Chromosome so far: 5:01078525952010775429120107919769601077673984
+New Chromosome so far: 6:01079197696010776739840107919769601077673984
+New Chromosome so far: 7:01079197696010776739840101
+New Chromosome so far: 8:11101000
+New Chromosome so far: 9:00110011
+New Chromosome so far: 10:11101000
+New Chromosome so far: 11:00001001
+New Chromosome so far: 12:11101001
+New Chromosome so far: 13:00001001
+New Chromosome so far: 14:11101001
+
+PARENT SELECTION: 
+
+Player 1 index: 0
+Player 2 index: 2
+Index Parents: 0
+Player 1 index: 5
+Player 2 index: 2
+Index Parents: 5
+Parents 1:0 0 1 1 0 0 1 1 
+Parents 2:1 1 1 0 1 0 0 1 
+
+CROSSOVER: 
+
+ crossover point: 2
+children: 1:00101001
+children: 2:11110011
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 6
+Children after mutation: 1:00101101
+Children after mutation: 2:11110001
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00101101
+New Chromosome so far: 2:11110001
+New Chromosome so far: 3:00110011
+New Chromosome so far: 4:11101001
+New Chromosome so far: 5:00101101
+New Chromosome so far: 6:11110001
+New Chromosome so far: 7:01079197696010776739840101
+New Chromosome so far: 8:11101000
+New Chromosome so far: 9:00110011
+New Chromosome so far: 10:11101000
+New Chromosome so far: 11:00001001
+New Chromosome so far: 12:11101001
+New Chromosome so far: 13:00001001
+New Chromosome so far: 14:11101001
+New Chromosome so far: 15:00001001
+New Chromosome so far: 16:11101001
+
+PARENT SELECTION: 
+
+Player 1 index: 0
+Player 2 index: 2
+Index Parents: 0
+Player 1 index: 5
+Player 2 index: 2
+Index Parents: 2
+Parents 1:0 0 1 1 0 0 1 1 
+Parents 2:0 0 0 0 1 0 0 1 
+
+CROSSOVER: 
+
+ crossover point: 2
+children: 1:00001001
+children: 2:00110011
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 6
+Children after mutation: 1:00001101
+Children after mutation: 2:00110001
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00001101
+New Chromosome so far: 2:00110001
+New Chromosome so far: 3:00110011
+New Chromosome so far: 4:00001001
+New Chromosome so far: 5:00101101
+New Chromosome so far: 6:11110001
+New Chromosome so far: 7:00001101
+New Chromosome so far: 8:00110001
+New Chromosome so far: 9:00110011
+New Chromosome so far: 10:11101000
+New Chromosome so far: 11:00001001
+New Chromosome so far: 12:11101001
+New Chromosome so far: 13:00001001
+New Chromosome so far: 14:11101001
+New Chromosome so far: 15:00001001
+New Chromosome so far: 16:11101001
+New Chromosome so far: 17:00001001
+New Chromosome so far: 18:11101001
+
+PARENT SELECTION: 
+
+Player 1 index: 0
+Player 2 index: 2
+Index Parents: 0
+Player 1 index: 5
+Player 2 index: 2
+Index Parents: 2
+Parents 1:0 0 1 1 0 0 1 1 
+Parents 2:0 0 0 0 1 0 0 1 
+
+CROSSOVER: 
+
+ crossover point: 2
+children: 1:00001001
+children: 2:00110011
+
+MUTATION: 
+
+MutationBit: 5
+MutationBit: 6
+Children after mutation: 1:00001101
+Children after mutation: 2:00110001
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00001101
+New Chromosome so far: 2:00110001
+New Chromosome so far: 3:00110011
+New Chromosome so far: 4:00001001
+New Chromosome so far: 5:00101101
+New Chromosome so far: 6:11110001
+New Chromosome so far: 7:00001101
+New Chromosome so far: 8:00110001
+New Chromosome so far: 9:00001101
+New Chromosome so far: 10:00110001
+New Chromosome so far: 11:00001001
+New Chromosome so far: 12:11101001
+New Chromosome so far: 13:00001001
+New Chromosome so far: 14:11101001
+New Chromosome so far: 15:00001001
+New Chromosome so far: 16:11101001
+New Chromosome so far: 17:00001001
+New Chromosome so far: 18:11101001
+New Chromosome so far: 19:00000000
+New Chromosome so far: 20:00000000
+
+GENERATION: 3
+Chromosome 1: 1 1 1 0 1 1 0 1 
+Chromosome 2: 1 1 1 0 1 0 1 0 
+Chromosome 3: 0 0 1 0 1 1 0 1 
+Chromosome 4: 1 1 1 1 0 0 0 1 
+Chromosome 5: 0 0 1 0 1 1 0 1 
+Chromosome 6: 1 1 1 1 0 0 0 1 
+Chromosome 7: 0 0 1 0 1 1 0 1 
+Chromosome 8: 1 1 1 1 0 0 0 1 
+Chromosome 9: 0 0 1 0 1 1 0 1 
+Chromosome 10: 1 1 1 1 0 0 0 1 
+
+
+EVALUATE CHROMOSOME: 
+Total weight of chromosome 1: 135
+Fitness value of chromosome: 1 = 0.298077
+Difference weight of chromosome: 1 = 31
+
+Total weight of chromosome 2: 132
+Fitness value of chromosome: 2 = 0.269231
+Difference weight of chromosome: 2 = 28
+
+Total weight of chromosome 3: 75
+Fitness value of chromosome: 3 = 0.278846
+Difference weight of chromosome: 3 = 29
+
+Total weight of chromosome 4: 112
+Fitness value of chromosome: 4 = 0.0769231
+Difference weight of chromosome: 4 = 8
+
+Total weight of chromosome 5: 75
+Fitness value of chromosome: 5 = 0.278846
+Difference weight of chromosome: 5 = 29
+
+Total weight of chromosome 6: 112
+Fitness value of chromosome: 6 = 0.0769231
+Difference weight of chromosome: 6 = 8
+
+Total weight of chromosome 7: 75
+Fitness value of chromosome: 7 = 0.278846
+Difference weight of chromosome: 7 = 29
+
+Total weight of chromosome 8: 112
+Fitness value of chromosome: 8 = 0.0769231
+Difference weight of chromosome: 8 = 8
+
+Total weight of chromosome 9: 75
+Fitness value of chromosome: 9 = 0.278846
+Difference weight of chromosome: 9 = 29
+
+Total weight of chromosome 10: 112
+Fitness value of chromosome: 10 = 0.0769231
+Difference weight of chromosome: 10 = 8
+
+PARENT SELECTION: 
+
+Player 1 index: 0
+Player 2 index: 2
+Index Parents: 2
+Player 1 index: 4
+Player 2 index: 2
+Index Parents: 2
+Parents 1:0 0 1 0 1 1 0 1 
+Parents 2:0 0 1 0 1 1 0 1 
+
+CROSSOVER: 
+
+ crossover point: 4
+children: 1:00101101
+children: 2:00101101
+
+MUTATION: 
+
+MutationBit: 6
+MutationBit: 4
+Children after mutation: 1:00101111
+Children after mutation: 2:00100101
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00101111
+New Chromosome so far: 2:00100101
+
+PARENT SELECTION: 
+
+Player 1 index: 6
+Player 2 index: 2
+Index Parents: 2
+Player 1 index: 4
+Player 2 index: 2
+Index Parents: 2
+Parents 1:0 0 1 0 1 1 0 1 
+Parents 2:0 0 1 0 1 1 0 1 
+
+CROSSOVER: 
+
+ crossover point: 4
+children: 1:00101101
+children: 2:00101101
+
+MUTATION: 
+
+MutationBit: 6
+MutationBit: 4
+Children after mutation: 1:00101111
+Children after mutation: 2:00100101
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00101111
+New Chromosome so far: 2:00100101
+New Chromosome so far: 3:00101101
+New Chromosome so far: 4:00101101
+
+PARENT SELECTION: 
+
+Player 1 index: 6
+Player 2 index: 2
+Index Parents: 2
+Player 1 index: 4
+Player 2 index: 2
+Index Parents: 2
+Parents 1:0 0 1 0 1 1 0 1 
+Parents 2:0 0 1 0 1 1 0 1 
+
+CROSSOVER: 
+
+ crossover point: 4
+children: 1:00101101
+children: 2:00101101
+
+MUTATION: 
+
+MutationBit: 6
+MutationBit: 4
+Children after mutation: 1:00101111
+Children after mutation: 2:00100101
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00101111
+New Chromosome so far: 2:00100101
+New Chromosome so far: 3:00101101
+New Chromosome so far: 4:00101101
+New Chromosome so far: 5:01077870592010776739840107773952001075838976
+New Chromosome so far: 6:01077739520010758389760107773952001075838976
+
+PARENT SELECTION: 
+
+Player 1 index: 6
+Player 2 index: 2
+Index Parents: 2
+Player 1 index: 4
+Player 2 index: 2
+Index Parents: 2
+Parents 1:0 0 1 0 1 1 0 1 
+Parents 2:0 0 1 0 1 1 0 1 
+
+CROSSOVER: 
+
+ crossover point: 4
+children: 1:00101101
+children: 2:00101101
+
+MUTATION: 
+
+MutationBit: 6
+MutationBit: 4
+Children after mutation: 1:00101111
+Children after mutation: 2:00100101
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00101111
+New Chromosome so far: 2:00100101
+New Chromosome so far: 3:00101101
+New Chromosome so far: 4:00101101
+New Chromosome so far: 5:01077870592010776739840107773952001075838976
+New Chromosome so far: 6:01077739520010758389760107773952001075838976
+New Chromosome so far: 7:01077739520010758389761101
+New Chromosome so far: 8:00110001
+
+PARENT SELECTION: 
+
+Player 1 index: 6
+Player 2 index: 2
+Index Parents: 2
+Player 1 index: 4
+Player 2 index: 2
+Index Parents: 2
+Parents 1:0 0 1 0 1 1 0 1 
+Parents 2:0 0 1 0 1 1 0 1 
+
+CROSSOVER: 
+
+ crossover point: 4
+children: 1:00101101
+children: 2:00101101
+
+MUTATION: 
+
+MutationBit: 6
+MutationBit: 4
+Children after mutation: 1:00101111
+Children after mutation: 2:00100101
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00101111
+New Chromosome so far: 2:00100101
+New Chromosome so far: 3:00101101
+New Chromosome so far: 4:00101101
+New Chromosome so far: 5:01077870592010776739840107773952001075838976
+New Chromosome so far: 6:01077739520010758389760107773952001075838976
+New Chromosome so far: 7:01077739520010758389761101
+New Chromosome so far: 8:00110001
+New Chromosome so far: 9:11101101
+New Chromosome so far: 10:11101010
+
+PARENT SELECTION: 
+
+Player 1 index: 6
+Player 2 index: 2
+Index Parents: 2
+Player 1 index: 4
+Player 2 index: 2
+Index Parents: 2
+Parents 1:0 0 1 0 1 1 0 1 
+Parents 2:0 0 1 0 1 1 0 1 
+
+CROSSOVER: 
+
+ crossover point: 4
+children: 1:00101101
+children: 2:00101101
+
+MUTATION: 
+
+MutationBit: 6
+MutationBit: 4
+Children after mutation: 1:00101111
+Children after mutation: 2:00100101
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00101111
+New Chromosome so far: 2:00100101
+New Chromosome so far: 3:00101101
+New Chromosome so far: 4:00101101
+New Chromosome so far: 5:01077870592010776739840107773952001075838976
+New Chromosome so far: 6:01077739520010758389760107773952001075838976
+New Chromosome so far: 7:01077739520010758389761101
+New Chromosome so far: 8:00110001
+New Chromosome so far: 9:11101101
+New Chromosome so far: 10:11101010
+New Chromosome so far: 11:00101101
+New Chromosome so far: 12:11110001
+
+PARENT SELECTION: 
+
+Player 1 index: 6
+Player 2 index: 2
+Index Parents: 2
+Player 1 index: 4
+Player 2 index: 2
+Index Parents: 2
+Parents 1:0 0 1 0 1 1 0 1 
+Parents 2:0 0 1 0 1 1 0 1 
+
+CROSSOVER: 
+
+ crossover point: 4
+children: 1:00101101
+children: 2:00101101
+
+MUTATION: 
+
+MutationBit: 6
+MutationBit: 4
+Children after mutation: 1:00101111
+Children after mutation: 2:00100101
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00101111
+New Chromosome so far: 2:00100101
+New Chromosome so far: 3:00101111
+New Chromosome so far: 4:00100101
+New Chromosome so far: 5:01077870592010776739840107773952001075838976
+New Chromosome so far: 6:01077739520010758389760107773952001075838976
+New Chromosome so far: 7:01077739520010758389761101
+New Chromosome so far: 8:00110001
+New Chromosome so far: 9:11101101
+New Chromosome so far: 10:11101010
+New Chromosome so far: 11:00101101
+New Chromosome so far: 12:11110001
+New Chromosome so far: 13:00101101
+New Chromosome so far: 14:11110001
+
+PARENT SELECTION: 
+
+Player 1 index: 6
+Player 2 index: 2
+Index Parents: 2
+Player 1 index: 4
+Player 2 index: 2
+Index Parents: 2
+Parents 1:0 0 1 0 1 1 0 1 
+Parents 2:0 0 1 0 1 1 0 1 
+
+CROSSOVER: 
+
+ crossover point: 4
+children: 1:00101101
+children: 2:00101101
+
+MUTATION: 
+
+MutationBit: 6
+MutationBit: 4
+Children after mutation: 1:00101111
+Children after mutation: 2:00100101
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00101111
+New Chromosome so far: 2:00100101
+New Chromosome so far: 3:00101101
+New Chromosome so far: 4:00101101
+New Chromosome so far: 5:00101111
+New Chromosome so far: 6:00100101
+New Chromosome so far: 7:01077739520010758389761101
+New Chromosome so far: 8:00110001
+New Chromosome so far: 9:11101101
+New Chromosome so far: 10:11101010
+New Chromosome so far: 11:00101101
+New Chromosome so far: 12:11110001
+New Chromosome so far: 13:00101101
+New Chromosome so far: 14:11110001
+New Chromosome so far: 15:00101101
+New Chromosome so far: 16:11110001
+
+PARENT SELECTION: 
+
+Player 1 index: 6
+Player 2 index: 2
+Index Parents: 6
+Player 1 index: 4
+Player 2 index: 2
+Index Parents: 4
+Parents 1:0 0 1 0 1 1 0 1 
+Parents 2:0 0 1 0 1 1 0 1 
+
+CROSSOVER: 
+
+ crossover point: 4
+children: 1:00101101
+children: 2:00101101
+
+MUTATION: 
+
+MutationBit: 6
+MutationBit: 4
+Children after mutation: 1:00101111
+Children after mutation: 2:00100101
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00101111
+New Chromosome so far: 2:00100101
+New Chromosome so far: 3:00101101
+New Chromosome so far: 4:00101101
+New Chromosome so far: 5:00101111
+New Chromosome so far: 6:00100101
+New Chromosome so far: 7:00101111
+New Chromosome so far: 8:00100101
+New Chromosome so far: 9:11101101
+New Chromosome so far: 10:11101010
+New Chromosome so far: 11:00101101
+New Chromosome so far: 12:11110001
+New Chromosome so far: 13:00101101
+New Chromosome so far: 14:11110001
+New Chromosome so far: 15:00101101
+New Chromosome so far: 16:11110001
+New Chromosome so far: 17:00101101
+New Chromosome so far: 18:11110001
+
+PARENT SELECTION: 
+
+Player 1 index: 6
+Player 2 index: 2
+Index Parents: 6
+Player 1 index: 4
+Player 2 index: 2
+Index Parents: 4
+Parents 1:0 0 1 0 1 1 0 1 
+Parents 2:0 0 1 0 1 1 0 1 
+
+CROSSOVER: 
+
+ crossover point: 4
+children: 1:00101101
+children: 2:00101101
+
+MUTATION: 
+
+MutationBit: 6
+MutationBit: 4
+Children after mutation: 1:00101111
+Children after mutation: 2:00100101
+
+SURVIVOR SELECTION: 
+
+New Chromosome so far: 1:00101111
+New Chromosome so far: 2:00100101
+New Chromosome so far: 3:00101101
+New Chromosome so far: 4:00101101
+New Chromosome so far: 5:00101111
+New Chromosome so far: 6:00100101
+New Chromosome so far: 7:00101111
+New Chromosome so far: 8:00100101
+New Chromosome so far: 9:00101111
+New Chromosome so far: 10:00100101
+New Chromosome so far: 11:00101101
+New Chromosome so far: 12:11110001
+New Chromosome so far: 13:00101101
+New Chromosome so far: 14:11110001
+New Chromosome so far: 15:00101101
+New Chromosome so far: 16:11110001
+New Chromosome so far: 17:00101101
+New Chromosome so far: 18:11110001
+New Chromosome so far: 19:00000000
+New Chromosome so far: 20:00000000
